@@ -4,9 +4,13 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "VertexBufferLayout.h"
 
 #include <iostream>
 #include <fstream>
+
+
 
 #include <string>
 
@@ -147,16 +151,15 @@ int main(void)
         0,3,2
 
     };
-    
 
-    uint vao;
-    GlCall( glGenVertexArrays(1,&vao) );
-    GlCall( glBindVertexArray(vao) );
-
+    VertexArray vao;
+    vao.bind();
 
     VertexBuffer vb = VertexBuffer(positions,std::size(positions));
-    GlCall( glEnableVertexAttribArray(0) );
-    GlCall( glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,2*sizeof(float),0) );
+    VertexBufferLayout layout;
+    layout.setAttrib(0,2,GL_FLOAT);
+
+    vao.addVertexBuffer(&vb,&layout);
 
     IndexBuffer ib = IndexBuffer(indices,std::size(indices));
 
@@ -168,7 +171,6 @@ int main(void)
 
     int location = glGetUniformLocation(shader,"u_Color");
     ASSERT(location != -1);
-
     GlCall( glBindVertexArray(0) );
     GlCall( glUseProgram(0) );
     GlCall( glBindBuffer(GL_ARRAY_BUFFER, 0) );
@@ -186,10 +188,10 @@ int main(void)
 
         GlCall( glUseProgram(shader) );
         GlCall( glUniform4f(location,r,g,b,1.0) );
+     
+        vao.bind();
+        ib.Bind();
 
-        GlCall( glBindVertexArray(vao) );
-    
-       
         GlCall( glDrawElements(GL_TRIANGLES,std::size(indices),GL_UNSIGNED_INT,nullptr) );
 
         if (r > 1.0){
