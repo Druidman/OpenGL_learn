@@ -2,7 +2,7 @@
 #define SHADER_H
 #include <iostream>
 #include <string>
-#include "Renderer.h"
+
 #include <GL/glew.h>
 #include <vector>
 #include <map>
@@ -19,7 +19,7 @@ class Shader
         uint program;
         std::string shaderFolderPath;
         std::map<std::string,int> uniformLocationCache;
-        
+
         ShaderCode parseShaderFile(std::string fileName);
         void createShader(std::string vc,std::string fc);
         uint compileShader(uint shaderType, std::string shaderCode);

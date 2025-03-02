@@ -76,24 +76,22 @@ int main(void)
     vao.unBind();
     shader.unBind();
     vb.UnBind();
-    ib.Bind();
+    ib.UnBind();
 
-    
+    Renderer renderer;
     
     float increment = 0.05;
     std::vector<float> colors = {0.0, 0.3, 0.5, 1.0};
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))  
     {
-        /* Render here */
-        GlCall( glClear(GL_COLOR_BUFFER_BIT) ); 
+        renderer.Clear();
         shader.bind();
         shader.setUniform4("u_Color",colors);
         
-        vao.bind();
-        ib.Bind();
+       
+        renderer.Draw(vao,ib,shader);
 
-        GlCall( glDrawElements(GL_TRIANGLES,std::size(indices),GL_UNSIGNED_INT,nullptr) );
 
         if (colors[0] > 1.0){
             increment = -0.05;
