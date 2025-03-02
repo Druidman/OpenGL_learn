@@ -29,6 +29,7 @@ void VertexArray::addVertexBuffer(VertexBuffer* vbo, VertexBufferLayout* layout)
     (*vbo).Bind();
 
     std::vector<VertexAttributeElement> elements = (*layout).getLayout();
+    uintptr_t offset = 0;
     for (int i = 0;i<elements.size();i++){
 
         VertexAttributeElement element = elements[i];
@@ -40,8 +41,9 @@ void VertexArray::addVertexBuffer(VertexBuffer* vbo, VertexBufferLayout* layout)
             element.count,
             element.type,
             GL_FALSE,
-            element.getStride(),
-            0
+            (*layout).getStride(),
+            (const void*)offset
         ) );
+        offset += element.count * element.getSizeOfType();
     }
 }

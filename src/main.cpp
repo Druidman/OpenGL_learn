@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "Texture.h"
 
 int main(void)
 {
@@ -44,10 +45,10 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << "\n";
 
     float positions[] = {
-        -0.5, -0.5,
-        -0.5,  0.5,
-         0.5,  0.5,
-         0.5, -0.5
+        -0.5, -0.5, 0.0, 0.0,
+        -0.5,  0.5, 0.0, 1.0,
+         0.5,  0.5, 1.0, 1.0,
+         0.5, -0.5, 1.0, 0.0
     };
 
     uint indices[] = {
@@ -56,12 +57,17 @@ int main(void)
 
     };
 
+    GlCall( glEnable(GL_BLEND) );
+    GlCall( glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) );
+ 
+
     VertexArray vao;
     vao.bind();
 
     VertexBuffer vb = VertexBuffer(positions,std::size(positions));
     VertexBufferLayout layout;
     layout.setAttrib(0,2,GL_FLOAT);
+    layout.setAttrib(1,2,GL_FLOAT);
 
     vao.addVertexBuffer(&vb,&layout);
 
@@ -72,11 +78,17 @@ int main(void)
     shader.loadFromFile("Basic.shader");
     shader.bind();
 
+    Texture texture = Texture("block.png");
+    texture.Bind(0);
+    shader.setUniform1i("u_Texture",0);
+
+
 
     vao.unBind();
     shader.unBind();
     vb.UnBind();
     ib.UnBind();
+
 
     Renderer renderer;
     
@@ -87,7 +99,7 @@ int main(void)
     {
         renderer.Clear();
         shader.bind();
-        shader.setUniform4("u_Color",colors);
+        
         
        
         renderer.Draw(vao,ib,shader);

@@ -13,23 +13,23 @@ struct VertexAttributeElement{
     VertexAttributeElement(uint index,uint count,uint type) : index(index), count(count), type(type){};
    
 
-    uint getStride(){
+    uint getSizeOfType(){
         uint byteSize;
         switch (type){
             case GL_FLOAT:
-                byteSize = sizeof(float) * count;
+                byteSize = sizeof(float);
                 break;
             case GL_INT:
-                byteSize = sizeof(int) * count;
+                byteSize = sizeof(int);
                 break;
             case GL_DOUBLE:
-                byteSize = sizeof(double) * count;
+                byteSize = sizeof(double);
                 break;
             case GL_UNSIGNED_INT:
-                byteSize = sizeof(uint) * count;
+                byteSize = sizeof(uint);
                 break;
             default:
-                byteSize = sizeof(float) * count;
+                byteSize = sizeof(float);
                 break;
             
         }
@@ -47,7 +47,7 @@ class VertexBufferLayout
         uint count();
 
         void setAttrib(uint index, uint count, uint type);
-
+        uint getStride();
         
         inline std::vector<VertexAttributeElement> getLayout(){ return layout; }
 

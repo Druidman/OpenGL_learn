@@ -117,7 +117,7 @@ void Shader::deleteShader()
     GlCall( glDeleteProgram(program) );
 }
 
-void Shader::setUniform4(std::string name, std::vector<float> params)
+void Shader::setUniform4f(std::string name, std::vector<float> params)
 {
     if (uniformLocationCache.find(name) != uniformLocationCache.end()){
         int location = glGetUniformLocation(program,name.c_str());
@@ -125,4 +125,15 @@ void Shader::setUniform4(std::string name, std::vector<float> params)
         uniformLocationCache[name] = location;
     }
     GlCall( glUniform4f(uniformLocationCache[name],params[0],params[1],params[2],params[3]) )
+}
+
+void Shader::setUniform1i(std::string name, int param)
+{
+    if (uniformLocationCache.find(name) != uniformLocationCache.end()){
+        int location = glGetUniformLocation(program,name.c_str());
+        ASSERT(location != -1);
+        uniformLocationCache[name] = location;
+    }
+    GlCall( glUniform1i(uniformLocationCache[name],param) )
+
 }

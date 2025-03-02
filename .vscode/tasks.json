@@ -3,13 +3,24 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++-11 kompiluj aktywny plik",
-            "command": "/usr/bin/g++-11",
+            "command": "g++",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/IndexBuffer.cpp",
+                "${workspaceFolder}/src/Renderer.cpp",
+                "${workspaceFolder}/src/Shader.cpp",
+                "${workspaceFolder}/src/Texture.cpp",
+                "${workspaceFolder}/src/VertexArray.cpp",
+                "${workspaceFolder}/src/VertexBuffer.cpp",
+                "${workspaceFolder}/src/VertexBufferLayout.cpp",
+                "${workspaceFolder}/src/vendor/stb_image/stb_image.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/src/main",
+                "-lglfw",
+                "-lGLEW",
+                "-lGL"
             ],
             "options": {
                 "cwd": "${fileDirname}"

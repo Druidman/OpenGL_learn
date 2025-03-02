@@ -30,6 +30,8 @@ class Shader
         void bind();
         void unBind();
         void deleteShader();
-        void setUniform4(std::string name,std::vector<float> params);
+        void setUniform4f(std::string name,std::vector<float> params);
+        void setUniform1i(std::string name,int param);
+
 };
 #endif
