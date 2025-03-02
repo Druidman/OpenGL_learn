@@ -6,107 +6,11 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
+#include "Shader.h"
 
 #include <iostream>
 #include <fstream>
-
-
-
 #include <string>
-
-struct ShaderCode {
-    std::string vertexCode;
-    std::string fragmentCode;
-};
-
-ShaderCode ParseShader(const std::string &filepath){
-    std::ifstream stream(filepath);
-
-
-    enum ReadMode{
-        NONE = -1, VERTEX=0, FRAGMENT=1
-    };
-
-
-    std::string line;
-
-    std::string vertexShader;
-    std::string fragmentShader;
-
-    ReadMode readMode = NONE;
-
-    while (getline(stream,line)){
-        if (line.find("#shader") != std::string::npos){
-            if (line.find("vertex") != std::string::npos){
-                readMode = VERTEX;
-            }
-            else if (line.find("fragment") != std::string::npos){
-                readMode = FRAGMENT;
-            }
-        }
-        else {
-            switch (readMode){
-                case NONE:
-                    break;
-                case VERTEX:
-                    vertexShader += line + "\n";
-                    
-                    break;
-                case FRAGMENT:
-                    fragmentShader += line + "\n";
-                    break;
-            }
-        }
-    }
-    return { 
-        vertexShader,
-        fragmentShader 
-    };
-}
-
-int compileShader(unsigned int type, const std::string& shader)
-{
-    unsigned int id = glCreateShader(type);
-    const char* src = &shader[0];
-    GlCall( glShaderSource(id,1,&src,nullptr) );
-    GlCall( glCompileShader(id) );
-
-    int params;
-    GlCall( glGetShaderiv(id,GL_COMPILE_STATUS,&params) );
-
-    if (params == GL_FALSE){
-        int logMsgLength;
-        GlCall( glGetShaderiv(id, GL_INFO_LOG_LENGTH,&logMsgLength) );
-
-        char *msg = (char*)alloca(logMsgLength * sizeof(char));
-        GlCall( glGetShaderInfoLog(id,logMsgLength,&logMsgLength,msg) );
-        std::cout << "Failed to compile shader" << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "\n";
-        std::cout << msg << "\n";
-        GlCall( glDeleteShader(id) );
-        return 0;
-    }
-    return id;
-}
-
-static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader)
-{
-    unsigned int program = glCreateProgram();
-
-    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
-
-    GlCall( glAttachShader(program,vs) );
-    GlCall( glAttachShader(program,fs) );
-
-    GlCall( glLinkProgram(program) );
-    GlCall( glValidateProgram(program) );
-
-    GlCall( glDeleteShader(vs) );
-    GlCall( glDeleteShader(fs) );
-    
-    return program;
-
-}
 
 int main(void)
 {
@@ -163,45 +67,42 @@ int main(void)
 
     IndexBuffer ib = IndexBuffer(indices,std::size(indices));
 
-    
-    ShaderCode source = ParseShader("../res/shaders/Basic.shader");
-    uint shader = createShader(source.vertexCode, source.fragmentCode);
 
-    GlCall( glUseProgram(shader) );
+    Shader shader = Shader("../res/shaders/");
+    shader.loadFromFile("Basic.shader");
+    shader.bind();
 
-    int location = glGetUniformLocation(shader,"u_Color");
-    ASSERT(location != -1);
-    GlCall( glBindVertexArray(0) );
-    GlCall( glUseProgram(0) );
+
+    vao.unBind();
+    shader.unBind();
     GlCall( glBindBuffer(GL_ARRAY_BUFFER, 0) );
     GlCall( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0) );
 
-    float r = 0.0;
-    float g = 0.3;
-    float b = 0.5;
+    
+    
     float increment = 0.05;
+    std::vector<float> colors = {0.0, 0.3, 0.5, 1.0};
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))  
     {
         /* Render here */
         GlCall( glClear(GL_COLOR_BUFFER_BIT) ); 
-
-        GlCall( glUseProgram(shader) );
-        GlCall( glUniform4f(location,r,g,b,1.0) );
-     
+        shader.bind();
+        shader.setUniform4("u_Color",colors);
+        
         vao.bind();
         ib.Bind();
 
         GlCall( glDrawElements(GL_TRIANGLES,std::size(indices),GL_UNSIGNED_INT,nullptr) );
 
-        if (r > 1.0){
+        if (colors[0] > 1.0){
             increment = -0.05;
         }
-        else if (r < 0.0){
+        else if (colors[0] < 0.0){
             increment = 0.05;
         }
 
-        r += increment;
+        colors[0] += increment;
         
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -209,7 +110,8 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
-    GlCall( glDeleteProgram(shader) );
+    shader.deleteShader();
+    
 
     glfwTerminate();
     return 0;
