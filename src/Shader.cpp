@@ -96,7 +96,6 @@ Shader::~Shader()
 void Shader::loadFromFile(std::string fileName)
 {
     ShaderCode sources = parseShaderFile(fileName);
-    std::cout << sources.fc;
     createShader(sources.vc,sources.fc);
 
 
