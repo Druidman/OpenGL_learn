@@ -75,8 +75,8 @@ int main(void)
 
     vao.unBind();
     shader.unBind();
-    GlCall( glBindBuffer(GL_ARRAY_BUFFER, 0) );
-    GlCall( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0) );
+    vb.UnBind();
+    ib.Bind();
 
     
     

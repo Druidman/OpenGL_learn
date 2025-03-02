@@ -120,7 +120,10 @@ void Shader::deleteShader()
 
 void Shader::setUniform4(std::string name, std::vector<float> params)
 {
-    int location = glGetUniformLocation(program,name.c_str());
-    ASSERT(location != -1)
-    GlCall( glUniform4f(location,params[0],params[1],params[2],params[3]) )
+    if (uniformLocationCache.find(name) != uniformLocationCache.end()){
+        int location = glGetUniformLocation(program,name.c_str());
+        ASSERT(location != -1);
+        uniformLocationCache[name] = location;
+    }
+    GlCall( glUniform4f(uniformLocationCache[name],params[0],params[1],params[2],params[3]) )
 }
