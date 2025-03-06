@@ -29,7 +29,7 @@ int main(void)
 
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -47,15 +47,15 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << "\n";
 
     float positions[] = {
-        -0.5, -0.5, 0.0, 0.0,
-        -0.5,  0.5, 0.0, 1.0,
-         0.5,  0.5, 1.0, 1.0,
-         0.5, -0.5, 1.0, 0.0
+        100.0, 100.0, 0.0, 0.0,
+        100.0, 200.0, 0.0, 1.0,
+        200.0, 100.0, 1.0, 0.0,
+        200.0, 200.0, 1.0, 1.0
     };
 
     uint indices[] = {
         0,1,2,
-        0,3,2
+        1,3,2
 
     };
 
@@ -75,7 +75,7 @@ int main(void)
 
     IndexBuffer ib = IndexBuffer(indices,std::size(indices));
 
-    glm::mat4 proj = glm::ortho(-2.0,2.0,-1.5,1.5,-1.0,1.0);
+    glm::mat4 proj = glm::ortho(0.0, 960.0, 0.0, 540.0,-1.0,1.0);
 
 
     Shader shader = Shader("../res/shaders/");
