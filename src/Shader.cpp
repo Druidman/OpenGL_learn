@@ -119,21 +119,29 @@ void Shader::deleteShader()
 
 void Shader::setUniform4f(std::string name, std::vector<float> params)
 {
-    if (uniformLocationCache.find(name) != uniformLocationCache.end()){
-        int location = glGetUniformLocation(program,name.c_str());
-        ASSERT(location != -1);
-        uniformLocationCache[name] = location;
-    }
-    GlCall( glUniform4f(uniformLocationCache[name],params[0],params[1],params[2],params[3]) )
+    GlCall( glUniform4f(getUniformLocation(name),params[0],params[1],params[2],params[3]) )
+}
+
+void Shader::setUniformMat4f(std::string name, glm::mat4 &matrix)
+{
+    GlCall( glUniformMatrix4fv(getUniformLocation(name),1,GL_FALSE,&matrix[0][0]) )
 }
 
 void Shader::setUniform1i(std::string name, int param)
 {
-    if (uniformLocationCache.find(name) != uniformLocationCache.end()){
+   
+    GlCall( glUniform1i(getUniformLocation(name),param) )
+
+}
+
+
+int Shader::getUniformLocation(std::string name){
+    if (uniformLocationCache.find(name) == uniformLocationCache.end()){
         int location = glGetUniformLocation(program,name.c_str());
         ASSERT(location != -1);
         uniformLocationCache[name] = location;
+        return location;
     }
-    GlCall( glUniform1i(uniformLocationCache[name],param) )
-
+    return uniformLocationCache[name];
+    
 }

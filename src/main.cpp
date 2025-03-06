@@ -1,5 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -73,10 +75,14 @@ int main(void)
 
     IndexBuffer ib = IndexBuffer(indices,std::size(indices));
 
+    glm::mat4 proj = glm::ortho(-2.0,2.0,-1.5,1.5,-1.0,1.0);
+
 
     Shader shader = Shader("../res/shaders/");
     shader.loadFromFile("Basic.shader");
     shader.bind();
+
+    shader.setUniformMat4f("u_MVP",proj);
 
     Texture texture = Texture("block.png");
     texture.Bind(0);
