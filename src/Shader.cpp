@@ -133,15 +133,24 @@ void Shader::setUniform1i(std::string name, int param)
     GlCall( glUniform1i(getUniformLocation(name),param) )
 
 }
+void Shader::setUniform1iv(std::string name, int param[])
+{
+
+    GlCall( glUniform1iv(getUniformLocation(name),2,param) )
+
+}
 
 
 int Shader::getUniformLocation(std::string name){
-    if (uniformLocationCache.find(name) == uniformLocationCache.end()){
-        int location = glGetUniformLocation(program,name.c_str());
-        ASSERT(location != -1);
-        uniformLocationCache[name] = location;
-        return location;
+    if (uniformLocationCache.find(name) != uniformLocationCache.end()){
+        return uniformLocationCache[name];
     }
-    return uniformLocationCache[name];
+
+    int location = glGetUniformLocation(program,name.c_str());
+    ASSERT(location != -1);
+    uniformLocationCache[name] = location;
+    return location;
+    
+    
     
 }

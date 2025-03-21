@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
+#include "tests/testClearColor.h"
+#include "tests/testTexture2D.h"
+#include "tests/testVertexColor.h"
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -9,11 +12,21 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
+#include "vendor/imgui/imgui.h"
+#include "vendor/imgui/imgui_impl_glfw.h"
+#include "vendor/imgui/imgui_impl_opengl3.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "Texture.h"
+
+enum ActiveTest{
+    ClearColor,
+    Texture2D,
+    VertexColor,
+    None
+};
 
 int main(void)
 {
@@ -47,15 +60,24 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << "\n";
 
     float positions[] = {
-        100.0, 100.0, 0.0, 0.0,
-        100.0, 200.0, 0.0, 1.0,
-        200.0, 100.0, 1.0, 0.0,
-        200.0, 200.0, 1.0, 1.0
+         50.0,  50.0,    1.0, 0.0, 0.0, 1.0,  0.0,    0.0,0.0,
+         50.0, 100.0,    1.0, 0.0, 0.0, 1.0,  0.0,    0.0,1.0,
+        100.0,  50.0,    1.0, 0.0, 0.0, 1.0,  0.0,    1.0,0.0,
+        100.0, 100.0,    1.0, 0.0, 0.0, 1.0,  0.0,    1.0,1.0,
+
+
+        150.0,  50.0,    1.0, 0.0, 0.0, 1.0,  1.0,    0.0,0.0,
+        150.0, 100.0,    1.0, 0.0, 0.0, 1.0,  1.0,    0.0,1.0,
+        200.0,  50.0,    1.0, 0.0, 0.0, 1.0,  1.0,    1.0,0.0,
+        200.0, 100.0,    1.0, 0.0, 0.0, 1.0,  1.0,    1.0,1.0
     };
 
     uint indices[] = {
         0,1,2,
-        1,3,2
+        2,3,1,
+
+        4,5,6,
+        6,7,5
 
     };
 
@@ -69,64 +91,116 @@ int main(void)
     VertexBuffer vb = VertexBuffer(positions,std::size(positions));
     VertexBufferLayout layout;
     layout.setAttrib(0,2,GL_FLOAT);
-    layout.setAttrib(1,2,GL_FLOAT);
+    layout.setAttrib(1,4,GL_FLOAT);
+    layout.setAttrib(2,1,GL_FLOAT);
+    layout.setAttrib(3,2,GL_FLOAT);
 
     vao.addVertexBuffer(&vb,&layout);
 
     IndexBuffer ib = IndexBuffer(indices,std::size(indices));
 
     glm::mat4 proj = glm::ortho(0.0, 960.0, 0.0, 540.0,-1.0,1.0);
+    glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0,0,0));
+
 
 
     Shader shader = Shader("../res/shaders/");
     shader.loadFromFile("Basic.shader");
     shader.bind();
-
-    shader.setUniformMat4f("u_MVP",proj);
-
-    Texture texture = Texture("block.png");
-    texture.Bind(0);
-    shader.setUniform1i("u_Texture",0);
-
-
+ 
 
     vao.unBind();
     shader.unBind();
     vb.UnBind();
     ib.UnBind();
 
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    const char* glsl_version = "#version 330";
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    
+    
+    ImGui::StyleColorsDark();
 
     Renderer renderer;
+
+    ActiveTest activeTest = None;
+    test::ClearColor clearColorTest;
+    test::Texture2D texture2DTest(shader,proj,view,renderer,vao,ib);
+    test::VertexColor vertexColorTest(shader,proj,view,renderer,vao,ib);
     
-    float increment = 0.05;
-    std::vector<float> colors = {0.0, 0.3, 0.5, 1.0};
-    /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))  
     {
         renderer.Clear();
-        shader.bind();
-        
-        
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
        
-        renderer.Draw(vao,ib,shader);
+        shader.bind();
+    
+        {
+              
+            switch (activeTest){
+                case ClearColor:
+                    clearColorTest.onRender();
+                    if (!clearColorTest.onImGuiRender()){
+                        clearColorTest.~ClearColor();
+                        activeTest = None;
+                    };
+                    break;
+                case Texture2D:
+                    texture2DTest.onRender();
+                    if (!texture2DTest.onImGuiRender()){
+                        texture2DTest.~Texture2D();
+                        activeTest = None;
+                    };
+                    break;
+                case VertexColor:
+                    vertexColorTest.onRender();
+                    if (!vertexColorTest.onImGuiRender()){
+                        vertexColorTest.~VertexColor();
+                        activeTest = None;
+                    };
+                    break;
+                
+                case None:
+                    ImGui::Begin("Test Menu");
+                    if (ImGui::Button("ClearColor",ImVec2(200,25))){
+                        activeTest = ClearColor;
+                    }
+                    if (ImGui::Button("2D texture",ImVec2(200,25))){
+                        activeTest = Texture2D;
+                    }  
+                    if (ImGui::Button("Vertex Color",ImVec2(200,25))){
+                        activeTest = VertexColor;
+                    }  
+                    ImGui::Text("FPS: %f",ImGui::GetIO().Framerate);
+                        
+                    ImGui::End();
+                    break;
+            }
+           
+            
 
-
-        if (colors[0] > 1.0){
-            increment = -0.05;
+            
+            
         }
-        else if (colors[0] < 0.0){
-            increment = 0.05;
-        }
-
-        colors[0] += increment;
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
+        
     }
     shader.deleteShader();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     
 
     glfwTerminate();

@@ -36,6 +36,7 @@ class Shader
         void setUniform4f(std::string name,std::vector<float> params);
         void setUniformMat4f(std::string name,glm::mat4 &matrix);
         void setUniform1i(std::string name,int param);
+        void setUniform1iv(std::string name,int param[]);
 
 };
 #endif
